@@ -1,0 +1,2 @@
+## Resumen del proyecto
+Este proyecto es un dashboard de métricas financieras que permite visualizar y analizar datos financieros clave a través de una interfaz web moderna. Está diseñado para servir como herramienta de monitoreo y análisis, facilitando la toma de decisiones basada en datos financieros
