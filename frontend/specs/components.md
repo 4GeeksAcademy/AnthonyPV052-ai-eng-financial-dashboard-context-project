@@ -12,6 +12,9 @@ Componentes:
 - `DateRangeFilterBar`
 : Componente contenedor de filtros globales de fecha.
 : Responsabilidad: mantener estado local de `start_date` y `end_date`, validar formato `YYYY-MM-DD`, emitir cambios al dashboard.
+: Comportamiento explicito cuando solo un input de fecha esta relleno:
+	- Si solo `start_date` tiene valor, la consulta se ejecuta con limite inferior unicamente.
+	- Si solo `end_date` tiene valor, la consulta se ejecuta con limite superior unicamente.
 : Props sugeridas:
 	- `value: DateRangeFilterParams`
 	- `onChange: (next: DateRangeFilterParams) => void`
@@ -62,6 +65,7 @@ Componentes:
 - `AlertsTable`
 : Tabla/listado de alertas.
 : Responsabilidad: render de `MetricsAlert[]`, ordenamiento y estado vacio.
+: Estado vacio explicito: cuando `rows.length === 0`, renderizar mensaje "No se detectaron alertas para este rango".
 : Props sugeridas:
 	- `rows: MetricsAlert[]`
 	- `loading?: boolean`
@@ -115,6 +119,22 @@ Componentes:
 : Responsabilidad: render de `TopCategoryItem[]` con columnas `category`, `operation_type`, `total_amount`.
 : Props sugeridas:
 	- `rows: TopCategoryItem[]`
+	- `loading?: boolean`
+
+- `Top5B2BPanel`
+: Panel dedicado al top-5 del segmento B2B.
+: Responsabilidad: consultar `business_type=B2B`, `limit=5` y renderizar tabla o estado vacio.
+: Estado vacio explicito: cuando la lista top-5 B2B esta vacia, renderizar mensaje "Sin categorias top para B2B en el rango seleccionado".
+: Props sugeridas:
+	- `baseParams: Omit<TopCategoriesParams, "business_type" | "limit">`
+	- `loading?: boolean`
+
+- `Top5B2CPanel`
+: Panel dedicado al top-5 del segmento B2C.
+: Responsabilidad: consultar `business_type=B2C`, `limit=5` y renderizar tabla o estado vacio.
+: Estado vacio explicito: cuando la lista top-5 B2C esta vacia, renderizar mensaje "Sin categorias top para B2C en el rango seleccionado".
+: Props sugeridas:
+	- `baseParams: Omit<TopCategoriesParams, "business_type" | "limit">`
 	- `loading?: boolean`
 
 - `TotalAmountCell`

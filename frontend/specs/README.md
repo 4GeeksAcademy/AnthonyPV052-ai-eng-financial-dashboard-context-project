@@ -72,6 +72,8 @@ Este documento describe 3 funcionalidades principales del frontend a partir de l
 	- Valores validos: `B2B | B2C`
 - Regla de validacion frontend recomendada:
 	- Si se envian ambas fechas, `start_date <= end_date`.
+	- Si solo `start_date` esta relleno, consultar desde esa fecha en adelante.
+	- Si solo `end_date` esta relleno, consultar hasta esa fecha.
 
 ### Edge cases y comportamiento esperado en UI
 1. Caso edge: `threshold < 0` enviado por error.
@@ -120,6 +122,8 @@ Este documento describe 3 funcionalidades principales del frontend a partir de l
 	- Valores validos: `B2B | B2C`
 - Regla de validacion frontend recomendada:
 	- Si se envian ambas fechas, `start_date <= end_date`.
+	- Si solo `start_date` esta relleno, consultar desde esa fecha en adelante.
+	- Si solo `end_date` esta relleno, consultar hasta esa fecha.
 
 ### Edge cases y comportamiento esperado en UI
 1. Caso edge: `limit` fuera de rango (`0` o `> 20`).
@@ -129,6 +133,9 @@ Este documento describe 3 funcionalidades principales del frontend a partir de l
 2. Caso edge: respuesta con menos elementos que `limit`.
 	 - UI debe renderizar solo filas recibidas.
 	 - UI no debe dibujar placeholders falsos para completar el limite.
+	 - En vista comparativa B2B vs B2C (dos paneles top-5), si la lista de un panel esta vacia se debe renderizar su estado vacio dedicado:
+	   - Panel B2B: "Sin categorias top para B2B en el rango seleccionado".
+	   - Panel B2C: "Sin categorias top para B2C en el rango seleccionado".
 
 3. Caso edge: `operation_type` no permitido por manipular URL (por ejemplo `operation_type=foo`).
 	 - API devolvera `422`.
