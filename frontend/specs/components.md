@@ -1,20 +1,20 @@
 # Desglose de Componentes por Funcionalidad
 
-Este documento define el desglose recomendado de componentes para implementar las funcionalidades descritas en `param-types.ts` y `api-types.ts`.
+Este documento define el desglose recomendado de componentes para implementar las funcionalidades descritas en `param-types.ts` y `api-types.ts`, alineadas con la respuesta real de `/docs`.
 
-## 1) Funcionalidad de filtros de fecha (DateRangeFilter)
+## 1) Funcionalidad de filtros de fecha (DateRangeFilterParams)
 
 Tipos relacionados:
 - `DateYMD`
-- `DateRangeFilter`
+- `DateRangeFilterParams`
 
 Componentes:
 - `DateRangeFilterBar`
 : Componente contenedor de filtros globales de fecha.
-: Responsabilidad: mantener estado local de `startDate` y `endDate`, validar formato `YYYY-MM-DD`, emitir cambios al dashboard.
+: Responsabilidad: mantener estado local de `start_date` y `end_date`, validar formato `YYYY-MM-DD`, emitir cambios al dashboard.
 : Props sugeridas:
-	- `value: DateRangeFilter`
-	- `onChange: (next: DateRangeFilter) => void`
+	- `value: DateRangeFilterParams`
+	- `onChange: (next: DateRangeFilterParams) => void`
 	- `onApply?: () => void`
 	- `onReset?: () => void`
 
@@ -29,16 +29,16 @@ Componentes:
 	- `max?: DateYMD`
 	- `error?: string`
 
-## 2) Funcionalidad de alertas (AlertsParams + AlertResponse)
+## 2) Funcionalidad de alertas (AlertsParams + AlertsResponse)
 
 Tipos relacionados:
 - Params: `AlertsParams`
-- Data: `AlertSeverity`, `AlertEntry`, `AlertResponse`
+- Data: `MetricsAlert`, `AlertsResponse`, `GroupBy`, `BusinessType`
 
 Componentes:
 - `AlertsPanel`
 : Componente contenedor principal de alertas.
-: Responsabilidad: ejecutar fetch con `AlertsParams`, manejar estados `loading/error/success`, manejar paginacion (`page`, `pageSize`).
+: Responsabilidad: ejecutar fetch con `AlertsParams`, manejar estados `loading/error/success`.
 : Props sugeridas:
 	- `params: AlertsParams`
 	- `onParamsChange: (next: AlertsParams) => void`
@@ -47,45 +47,37 @@ Componentes:
 : Componente de control para el `threshold`.
 : Responsabilidad: captura de decimal `>= 0`, mostrar ayuda contextual (por ejemplo, `0.3 = 30%`).
 : Props sugeridas:
-	- `value: number`
-	- `onChange: (value: number) => void`
+	- `value?: number`
+	- `onChange: (value?: number) => void`
 	- `min?: number`
 	- `step?: number`
 
+- `AlertGroupBySelect`
+: Selector de granularidad temporal.
+: Responsabilidad: alternar `group_by` en valores validos de OpenAPI.
+: Props sugeridas:
+	- `value?: GroupBy`
+	- `onChange: (value?: GroupBy) => void`
+
 - `AlertsTable`
 : Tabla/listado de alertas.
-: Responsabilidad: render de `AlertEntry[]`, ordenamiento y estado vacio.
+: Responsabilidad: render de `MetricsAlert[]`, ordenamiento y estado vacio.
 : Props sugeridas:
-	- `rows: AlertEntry[]`
+	- `rows: MetricsAlert[]`
 	- `loading?: boolean`
 	- `emptyMessage?: string`
 
-- `AlertSeverityBadge`
-: Representacion visual de `AlertSeverity`.
-: Responsabilidad: mapeo consistente de severidad a color/estilo.
+- `IncreaseRatioCell`
+: Celda visual para `increase_ratio`.
+: Responsabilidad: formatear ratio como porcentaje y destacar incrementos altos.
 : Props sugeridas:
-	- `severity: AlertSeverity`
-
-- `AlertStatusBadge`
-: Representacion visual de estado de alerta.
-: Responsabilidad: mostrar `open`, `acknowledged`, `resolved` de forma consistente.
-: Props sugeridas:
-	- `status?: "open" | "acknowledged" | "resolved"`
-
-- `AlertsPagination`
-: Control de paginacion.
-: Responsabilidad: navegar por `page`, respetar `pageSize` y `total`.
-: Props sugeridas:
-	- `page: number`
-	- `pageSize: number`
-	- `total: number`
-	- `onPageChange: (page: number) => void`
+	- `value: number`
 
 ## 3) Funcionalidad de top categorias (TopCategoriesParams + TopCategoriesResponse)
 
 Tipos relacionados:
 - Params: `TopCategoriesParams`
-- Data: `CategoryEntry`, `TopCategoriesResponse`
+- Data: `TopCategoryItem`, `TopCategoriesResponse`, `OperationType`, `BusinessType`
 
 Componentes:
 - `TopCategoriesPanel`
@@ -99,70 +91,75 @@ Componentes:
 : Selector de tipo de operacion.
 : Responsabilidad: permitir valores validos (`income`, `outcome`).
 : Props sugeridas:
-	- `value: string`
-	- `onChange: (value: string) => void`
-	- `options?: Array<{ value: string; label: string }>`
+	- `value?: OperationType`
+	- `onChange: (value?: OperationType) => void`
 
 - `TopLimitSelect`
 : Selector para `limit`.
 : Responsabilidad: restringir rango permitido (`1..20`).
 : Props sugeridas:
-	- `value: number`
-	- `onChange: (value: number) => void`
+	- `value?: number`
+	- `onChange: (value?: number) => void`
 	- `min?: number`
 	- `max?: number`
 
+- `BusinessTypeSelect`
+: Selector de segmento de negocio.
+: Responsabilidad: permitir filtro opcional `business_type` (`B2B`, `B2C`).
+: Props sugeridas:
+	- `value?: BusinessType`
+	- `onChange: (value?: BusinessType) => void`
+
 - `TopCategoriesTable`
 : Tabla comparativa por categoria.
-: Responsabilidad: render de `CategoryEntry[]` con columnas `b2bValue`, `b2cValue`, `difference`, `differencePercent`, `rank`.
+: Responsabilidad: render de `TopCategoryItem[]` con columnas `category`, `operation_type`, `total_amount`.
 : Props sugeridas:
-	- `rows: CategoryEntry[]`
+	- `rows: TopCategoryItem[]`
 	- `loading?: boolean`
 
-- `DifferenceTrendCell`
-: Celda visual para diferencias.
-: Responsabilidad: destacar signo positivo/negativo en `difference` y `differencePercent`.
+- `TotalAmountCell`
+: Celda visual para montos.
+: Responsabilidad: formatear `total_amount` en moneda con separadores y precision consistente.
 : Props sugeridas:
-	- `difference: number`
-	- `differencePercent: number`
+	- `value: number`
 
 ## 4) Funcionalidad de facetas (FacetsResponse)
 
 Tipos relacionados:
-- Data: `FacetItem`, `FacetGroup`, `FacetsResponse`
+- Data: `FacetsResponse`, `OperationType`, `BusinessType`, `Category`
 
 Componentes:
 - `FacetsSidebar`
 : Componente contenedor de facetas.
-: Responsabilidad: render de grupos y items, emision de selecciones activas, resumen de rango (`startDate`, `endDate`) y total.
+: Responsabilidad: render de listas de `operation_types`, `business_types` y `categories`, mas resumen de rango (`min_date`, `max_date`).
 : Props sugeridas:
 	- `data: FacetsResponse | null`
 	- `loading?: boolean`
-	- `onSelect: (groupName: string, itemKey: string) => void`
+	- `onSelect: (groupName: "operation_type" | "business_type" | "category", itemKey: string) => void`
 
-- `FacetGroupSection`
-: Bloque visual por grupo de faceta.
-: Responsabilidad: render de `FacetGroup.name` e items.
+- `FacetsListSection`
+: Bloque visual por lista de faceta.
+: Responsabilidad: render de una lista tipada (`OperationType[]`, `BusinessType[]` o `Category[]`).
 : Props sugeridas:
-	- `group: FacetGroup`
+	- `title: string`
+	- `items: string[]`
 	- `selectedKeys?: string[]`
 	- `onToggle: (itemKey: string) => void`
 
-- `FacetItemChip`
+- `FacetValueChip`
 : Elemento seleccionable de faceta.
-: Responsabilidad: mostrar `label` o `key`, `count` y opcionalmente `value`.
+: Responsabilidad: mostrar valor de enum y estado seleccionado.
 : Props sugeridas:
-	- `item: FacetItem`
+	- `value: string`
 	- `selected?: boolean`
 	- `onClick: () => void`
 
 - `FacetSummaryBar`
 : Resumen superior del set de facetas.
-: Responsabilidad: mostrar `startDate`, `endDate`, `total`.
+: Responsabilidad: mostrar `min_date` y `max_date`.
 : Props sugeridas:
-	- `startDate: string`
-	- `endDate: string`
-	- `total: number`
+	- `minDate: string`
+	- `maxDate: string`
 
 ## 5) Componentes transversales recomendados
 
@@ -172,11 +169,11 @@ Componentes:
 
 - `DashboardFiltersState`
 : Estado compartido de filtros.
-: Responsabilidad: centralizar `DateRangeFilter`, `threshold`, `operationType`, `limit` para evitar duplicidad.
+: Responsabilidad: centralizar `DateRangeFilterParams`, `threshold`, `group_by`, `operation_type`, `limit`, `business_type` para evitar duplicidad.
 
 - `QueryParamsMapper`
 : Utilidad de mapeo de contrato frontend -> backend.
-: Responsabilidad: convertir `operationType` -> `operation_type` al construir querystring.
+: Responsabilidad: serializar params opcionales sin enviar claves undefined.
 
 ## 6) Integracion con componentes ya existentes
 

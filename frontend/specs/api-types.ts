@@ -1,241 +1,141 @@
-export interface FacetItem {
-	/**
-	 * Identificador interno de la opcion de faceta.
-	 *
-	 * Valor valido: cadena no vacia y estable para uso en filtros.
-	 * Ejemplo: "sales", "B2B", "income".
-	 */
-	key: string;
-	/**
-	 * Etiqueta legible para mostrar en UI.
-	 *
-	 * Valor valido: texto corto descriptivo.
-	 * Si no existe, se puede usar `key` como fallback visual.
-	 */
-	label?: string;
-	/**
-	 * Valor numerico agregado de la faceta.
-	 *
-	 * Formato: numero decimal.
-	 * Valor valido: numero finito (puede ser 0 o mayor, segun la metrica).
-	 */
-	value?: number;
-	/**
-	 * Cantidad de registros que caen en esta faceta.
-	 *
-	 * Formato: entero.
-	 * Valores validos: >= 0.
-	 */
-	count: number;
-}
+/**
+ * Tipo de operacion reportada por la API.
+ *
+ * Valores validos: "income" | "outcome".
+ */
+export type OperationType = "income" | "outcome";
 
-export interface FacetGroup {
-	/**
-	 * Nombre del grupo de facetas.
-	 *
-	 * Valor valido: identificador de dimension de filtro.
-	 * Ejemplo: "operation_type", "business_type", "category".
-	 */
-	name: string;
-	/**
-	 * Opciones disponibles dentro del grupo de facetas.
-	 *
-	 * Formato: arreglo de items de faceta.
-	 */
-	items: FacetItem[];
-}
+/**
+ * Categoria de negocio reportada por la API.
+ *
+ * Valores validos:
+ * - "suppliers"
+ * - "sales"
+ * - "operational"
+ * - "administrative"
+ * - "others"
+ */
+export type Category =
+	| "suppliers"
+	| "sales"
+	| "operational"
+	| "administrative"
+	| "others";
 
+/**
+ * Segmento de negocio reportado por la API.
+ *
+ * Valores validos: "B2B" | "B2C".
+ */
+export type BusinessType = "B2B" | "B2C";
+
+/**
+ * Nivel de agrupacion temporal para endpoints que resumen series.
+ *
+ * Valores validos: "day" | "week" | "month".
+ */
+export type GroupBy = "day" | "week" | "month";
+
+/**
+ * Respuesta de `GET /api/metrics/facets`.
+ */
 export interface FacetsResponse {
 	/**
-	 * Fecha minima presente en los datos usados para las facetas.
+	 * Tipos de operacion disponibles para filtrar.
+	 *
+	 * Formato: arreglo de enum `OperationType`.
+	 */
+	operation_types: OperationType[];
+	/**
+	 * Tipos de negocio disponibles para filtrar.
+	 *
+	 * Formato: arreglo de enum `BusinessType`.
+	 */
+	business_types: BusinessType[];
+	/**
+	 * Categorias disponibles para filtrar.
+	 *
+	 * Formato: arreglo de enum `Category`.
+	 */
+	categories: Category[];
+	/**
+	 * Fecha minima detectada en la muestra.
 	 *
 	 * Formato: YYYY-MM-DD.
 	 */
-	startDate: string;
+	min_date: string;
 	/**
-	 * Fecha maxima presente en los datos usados para las facetas.
+	 * Fecha maxima detectada en la muestra.
 	 *
 	 * Formato: YYYY-MM-DD.
 	 */
-	endDate: string;
-	/**
-	 * Total de registros evaluados para construir facetas.
-	 *
-	 * Formato: entero.
-	 * Valores validos: >= 0.
-	 */
-	total: number;
-	/**
-	 * Conjunto de grupos de facetas retornados por la API.
-	 */
-	facets: FacetGroup[];
+	max_date: string;
 }
 
 /**
- * Nivel de severidad de una alerta.
- *
- * Valores validos:
- * - "low": impacto bajo.
- * - "medium": impacto moderado.
- * - "high": impacto alto.
- * - "critical": impacto critico.
+ * Item de alerta retornado por `GET /api/metrics/alerts`.
  */
-export type AlertSeverity = "low" | "medium" | "high" | "critical";
-
-export interface AlertEntry {
+export interface MetricsAlert {
 	/**
-	 * Identificador unico de la alerta.
+	 * Periodo sobre el cual se detecto la desviacion.
 	 *
-	 * Valor valido: cadena no vacia (UUID u otro id estable).
+	 * Formato: cadena dependiente de `group_by` (por ejemplo, YYYY-MM o YYYY-Wnn).
 	 */
-	id: string;
+	period: string;
 	/**
-	 * Fecha asociada al evento detectado.
-	 *
-	 * Formato recomendado: YYYY-MM-DD.
-	 * Tambien puede ser ISO 8601 si incluye hora.
-	 */
-	date: string;
-	/**
-	 * Nombre de la metrica que genero la alerta.
-	 *
-	 * Valor valido: identificador textual de metrica.
-	 * Ejemplo: "outcome", "income", "net".
-	 */
-	metric: string;
-	/**
-	 * Mensaje descriptivo de la anomalia detectada.
-	 */
-	message: string;
-	/**
-	 * Grado de severidad de la alerta.
-	 *
-	 * Valores validos: "low" | "medium" | "high" | "critical".
-	 */
-	severity: AlertSeverity;
-	/**
-	 * Valor esperado segun baseline o referencia historica.
+	 * Total de outcome observado en el periodo.
 	 *
 	 * Formato: numero decimal.
 	 */
-	expectedValue: number;
+	outcome_total: number;
 	/**
-	 * Valor observado realmente en el periodo evaluado.
+	 * Promedio historico usado como baseline de comparacion.
 	 *
 	 * Formato: numero decimal.
 	 */
-	actualValue: number;
+	baseline_average: number;
 	/**
-	 * Desviacion porcentual entre valor real y esperado.
+	 * Incremento relativo respecto al baseline.
 	 *
-	 * Formato: porcentaje como numero.
-	 * Ejemplo: 12.5 representa 12.5%.
+	 * Formato: ratio decimal. Ejemplo: 0.3 representa 30%.
 	 */
-	deviationPercent: number;
-	/**
-	 * Estado operativo de la alerta.
-	 *
-	 * Valores validos:
-	 * - "open": pendiente de atencion.
-	 * - "acknowledged": revisada/reconocida.
-	 * - "resolved": cerrada o solucionada.
-	 */
-	status?: "open" | "acknowledged" | "resolved";
+	increase_ratio: number;
 }
 
-export interface AlertResponse {
+/**
+ * Respuesta de `GET /api/metrics/alerts`.
+ *
+ * La API retorna una coleccion simple sin paginacion.
+ */
+export type AlertsResponse = MetricsAlert[];
+
+/**
+ * Item de categoria retornado por `GET /api/metrics/categories/top`.
+ */
+export interface TopCategoryItem {
 	/**
-	 * Total de alertas encontradas para el criterio consultado.
+	 * Categoria evaluada.
 	 *
-	 * Formato: entero.
-	 * Valores validos: >= 0.
+	 * Valores validos: enum `Category`.
 	 */
-	total: number;
+	category: Category;
 	/**
-	 * Numero de pagina actual (base 1).
+	 * Tipo de operacion para el que se calculo el total.
 	 *
-	 * Formato: entero.
-	 * Valores validos: >= 1.
+	 * Valores validos: enum `OperationType`.
 	 */
-	page: number;
+	operation_type: OperationType;
 	/**
-	 * Cantidad de elementos por pagina.
+	 * Total agregado para la categoria.
 	 *
-	 * Formato: entero.
-	 * Valores validos: >= 1.
+	 * Formato: numero decimal.
 	 */
-	pageSize: number;
-	/**
-	 * Coleccion de alertas para la pagina solicitada.
-	 */
-	alerts: AlertEntry[];
+	total_amount: number;
 }
 
-export interface CategoryEntry {
-	/**
-	 * Nombre de la categoria evaluada.
-	 *
-	 * Valor valido: categoria de negocio existente.
-	 * Ejemplo: "suppliers", "sales", "operational".
-	 */
-	category: string;
-	/**
-	 * Valor agregado de la categoria para el segmento B2B.
-	 *
-	 * Formato: numero decimal.
-	 */
-	b2bValue: number;
-	/**
-	 * Valor agregado de la categoria para el segmento B2C.
-	 *
-	 * Formato: numero decimal.
-	 */
-	b2cValue: number;
-	/**
-	 * Diferencia absoluta entre B2B y B2C.
-	 *
-	 * Formato: numero decimal.
-	 * Convencion recomendada: b2bValue - b2cValue.
-	 */
-	difference: number;
-	/**
-	 * Diferencia relativa expresada como porcentaje.
-	 *
-	 * Formato: porcentaje como numero.
-	 * Ejemplo: -8.4 representa -8.4%.
-	 */
-	differencePercent: number;
-	/**
-	 * Posicion de la categoria dentro del ranking.
-	 *
-	 * Formato: entero.
-	 * Valores validos: >= 1.
-	 */
-	rank?: number;
-}
-
-export interface TopCategoriesResponse {
-	/**
-	 * Fecha inicial del periodo usado para calcular categorias top.
-	 *
-	 * Formato: YYYY-MM-DD.
-	 */
-	startDate: string;
-	/**
-	 * Fecha final del periodo usado para calcular categorias top.
-	 *
-	 * Formato: YYYY-MM-DD.
-	 */
-	endDate: string;
-	/**
-	 * Total de categorias incluidas en la respuesta.
-	 *
-	 * Formato: entero.
-	 * Valores validos: >= 0.
-	 */
-	totalCategories: number;
-	/**
-	 * Listado de categorias y sus metricas comparativas.
-	 */
-	categories: CategoryEntry[];
-}
+/**
+ * Respuesta de `GET /api/metrics/categories/top`.
+ *
+ * La API retorna un arreglo ordenado por monto descendente.
+ */
+export type TopCategoriesResponse = TopCategoryItem[];
