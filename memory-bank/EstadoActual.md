@@ -34,11 +34,43 @@
 	- Estado sin datos en graficos
 - Utilidades financieras para agregacion mensual, KPIs y formato de moneda/porcentaje.
 - Pruebas unitarias frontend para utilidades financieras con Vitest.
+- Mejoras de accesibilidad aplicadas:
+	- Skip link a contenido principal.
+	- Focus visible global para navegacion por teclado.
+	- Region `aria-live` para loading y `role=alert` para errores.
+	- Alternativas textuales para graficos (figure/figcaption + tabla oculta para lector).
+	- Iconos decorativos marcados con `aria-hidden`.
+- Optimizaciones React aplicadas (alineadas con buenas practicas de Vercel):
+	- Estado derivado calculado con `useMemo` en lugar de duplicarlo en `useEffect`.
+	- Fetch con `AbortController` y cleanup para evitar efectos colaterales en desmontaje.
+	- `memo` en componentes de dashboard (`KPIRow`, `IncomeOutcomeChart`, `ProfitPercentChart`).
+	- Hoisting de objetos/formatters estaticos en charts para reducir recreacion por render.
+- Metadatos del frontend ajustados:
+	- `index.html` en `lang="es"`.
+	- `title` actualizado a "Dashboard Financiero".
+	- `meta description` agregada para SEO basico en Vite.
+- Build frontend validado localmente con `npm run build` (ok).
 
 ### Infraestructura y DX
 - Levantamiento unificado con Docker Compose.
 - Scripts de desarrollo, build, lint y test disponibles en frontend.
 - Dependencias backend para API, testing y cobertura definidas en requirements.
+- Se resolvio bloqueo local de permisos en `frontend/node_modules` para poder instalar dependencias y ejecutar build.
+
+## Skills aplicadas y creada
+
+### Skills aplicadas en esta iteracion
+- `accessibility`
+	- Se uso para auditar y corregir WCAG en la UI del dashboard.
+- `vercel-react-best-practices`
+	- Se uso para refactorizar flujo de datos y reducir renders innecesarios.
+- `typescript-advanced-types`
+	- Se analizo y justifico su valor para fortalecer contratos tipados API y escalabilidad de tipos.
+
+### Nueva skill creada
+- `api-contract-guardrails`
+	- Ruta: `.agents/skills/api-contract-guardrails/SKILL.md`.
+	- Enfoca convenciones del proyecto: `snake_case` en params/payload, enums cerrados, fechas `YYYY-MM-DD`, manejo obligatorio de `loading/error/success`, naming descriptivo y checklist de PR.
 
 ## Cosas por implementar o corregir
 
@@ -58,9 +90,14 @@
 - Riesgo: imports dispersos y escalabilidad reducida del modulo.
 
 4. Estandarizar idioma y microcopy de UI
-- Estado: pendiente.
-- Hallazgo: textos de interfaz principalmente en ingles y mensaje de error en espanol.
+- Estado: pendiente parcial.
+- Hallazgo: metadatos/documento principal ya en espanol, pero microcopy de tarjetas y charts sigue mayormente en ingles.
 - Riesgo: experiencia inconsistente para usuarios finales.
+
+5. Optimizar tamano de bundle frontend
+- Estado: pendiente.
+- Hallazgo: warning de Vite por chunk > 500 kB tras minificacion.
+- Riesgo: peor performance inicial en redes lentas y dispositivos de gama baja.
 
 ## Siguientes prioridades (orden recomendado)
 
@@ -82,7 +119,12 @@
 	- `frontend/src/components/dashboard/index.ts`
 	- Ajustar imports para simplificar consumo.
 
-### Prioridad 6 (media-baja)
+### Prioridad 4 (media)
+- Optimizar bundle frontend:
+	- Aplicar code splitting en modulos pesados (charts/zonas no criticas).
+	- Revisar imports para reducir JS inicial.
+
+### Prioridad 5 (media-baja)
 - Homogeneizar idioma de producto (es o en) y textos de feedback.
 
 ## Nota de seguimiento
